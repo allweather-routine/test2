@@ -61,6 +61,9 @@
       <button class="nav-btn" data-tab="bookmarks" id="btn-tab-bookmarks">
         <i data-lucide="bookmark"></i> 오답/책갈피
       </button>
+      <button class="nav-btn" data-tab="comments" id="btn-tab-comments">
+        <i data-lucide="message-circle"></i> 한마디
+      </button>
     </nav>
 
     <!-- Main Content Area -->
@@ -303,6 +306,34 @@
             </div>
           </div>
         </div>
+      </section>
+
+      <!-- COMMENTS TAB -->
+      <section id="tab-comments" class="tab-content">
+        <div class="section-header comments-heading">
+          <div>
+            <h2>함께 남기는 한마디</h2>
+            <p class="subtitle">공부하면서 느낀 점이나 응원의 말을 남겨 보세요.</p>
+          </div>
+          <span class="comment-count" id="comment-count">0개</span>
+        </div>
+
+        <form class="comment-form" id="comment-form">
+          <div>
+            <label for="comment-author">작성자 이름</label>
+            <input type="text" id="comment-author" maxlength="20" placeholder="이름을 입력해 주세요" autocomplete="name" required>
+          </div>
+          <div class="comment-content-field">
+            <label for="comment-content">한마디</label>
+            <textarea id="comment-content" maxlength="300" rows="4" placeholder="따뜻한 한마디를 남겨 주세요" required></textarea>
+            <span class="comment-char-count" id="comment-char-count">0 / 300</span>
+          </div>
+          <button class="btn btn-primary comment-submit" type="submit">
+            <i data-lucide="send"></i> 등록하기
+          </button>
+        </form>
+
+        <div class="comments-list" id="comments-list" aria-live="polite"></div>
       </section>
 
     </main>

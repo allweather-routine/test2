@@ -1125,3 +1125,245 @@ body {
 .wordlist-action-btn.check.active:hover {
   background: var(--success-light);
 }
+
+/* COMMENTS TAB */
+.comments-heading {
+  align-items: flex-start;
+}
+
+.comments-heading .subtitle {
+  margin-top: 7px;
+  line-height: 1.5;
+}
+
+.comment-count {
+  flex: 0 0 auto;
+  padding: 6px 11px;
+  border-radius: 999px;
+  color: var(--primary);
+  background: var(--primary-light);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.comment-form {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  margin-bottom: 22px;
+  border: 1px solid rgba(79, 70, 229, 0.12);
+  border-radius: var(--radius-md);
+  background: linear-gradient(145deg, #f8faff, #fff);
+  box-shadow: var(--shadow-card);
+}
+
+.comment-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-dark);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.comment-form input,
+.comment-form textarea {
+  width: 100%;
+  border: 1px solid #dbe2ef;
+  border-radius: var(--radius-sm);
+  background: #fff;
+  color: var(--text-main);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: var(--transition-smooth);
+}
+
+.comment-form input {
+  padding: 12px 14px;
+}
+
+.comment-form textarea {
+  min-height: 104px;
+  padding: 13px 14px 28px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.comment-form input:focus,
+.comment-form textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.comment-content-field {
+  position: relative;
+}
+
+.comment-char-count {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.comment-submit {
+  justify-self: end;
+}
+
+.comment-submit i {
+  width: 16px;
+}
+
+.comments-list {
+  display: grid;
+  gap: 12px;
+}
+
+.comment-item {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  gap: 13px;
+  align-items: start;
+  padding: 17px;
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.06);
+}
+
+.comment-avatar {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.comment-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin: 2px 0 7px;
+}
+
+.comment-meta strong {
+  color: var(--text-dark);
+  font-size: 14px;
+}
+
+.comment-meta time {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.comment-text {
+  color: var(--text-main);
+  font-size: 14px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.comment-delete {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 10px;
+  color: var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.comment-delete:hover {
+  color: var(--danger);
+  background: var(--danger-light);
+}
+
+.comment-delete i {
+  width: 15px;
+}
+
+.comments-empty {
+  display: flex;
+  min-height: 170px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px dashed rgba(99, 102, 241, 0.22);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  background: var(--bg-surface-elevated);
+  text-align: center;
+}
+
+.comments-empty i {
+  width: 30px;
+  height: 30px;
+  margin-bottom: 4px;
+  color: var(--primary);
+}
+
+.comments-empty strong {
+  color: var(--text-main);
+  font-size: 14px;
+}
+
+.comments-empty span {
+  font-size: 12px;
+}
+
+.comments-error {
+  color: var(--danger);
+  border-color: rgba(255, 77, 77, 0.25);
+  background: var(--danger-light);
+}
+
+.comments-error i,
+.comments-error strong {
+  color: var(--danger);
+}
+
+.comment-submit:disabled,
+.comment-delete:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (max-width: 560px) {
+  .app-nav {
+    overflow-x: auto;
+  }
+
+  .nav-btn {
+    min-width: 84px;
+    padding-inline: 10px;
+  }
+
+  .comment-form {
+    padding: 16px;
+  }
+
+  .comment-submit {
+    width: 100%;
+  }
+
+  .comment-item {
+    grid-template-columns: 38px 1fr auto;
+    padding: 14px;
+  }
+
+  .comment-avatar {
+    width: 38px;
+    height: 38px;
+  }
+}

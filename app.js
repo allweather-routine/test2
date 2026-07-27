@@ -54,12 +54,27 @@ const verbDataset = [
   { base: "sleep", past: "slept", pp: "slept", meaning: "자다" }
 ];
 
+// Supabase public client configuration
+const SUPABASE_URL = 'https://vatttnvvglzlgwrrlkrc.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhdHR0bnZ2Z2x6bGd3cnJsa3JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3MTMyNDMsImV4cCI6MjEwMDI4OTI0M30.LDTH1o40PL9ysnIWzmjpJCeQD1wV88T6YnAL2aKfNpg';
+const COMMENTS_ENDPOINT = `${SUPABASE_URL}/rest/v1/comments`;
+
+function supabaseHeaders(extraHeaders = {}) {
+  return {
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    'Content-Type': 'application/json',
+    ...extraHeaders
+  };
+}
+
 // App State
 let state = {
   learned: new Set(),     // Stored as base verbs
   starred: new Set(),     // Stored as base verbs
   incorrect: new Set(),   // Stored as base verbs
   studyCount: {},         // Verb study counts: { baseVerb: count }
+  comments: [],           // { id, author, content, created_at }
   studyList: [...verbDataset],
   studyIndex: 0,
   studyFilter: 'all',     // 'all', 'unlearned', 'starred'
@@ -81,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initWordListTab();
   initQuizTab();
   initBookmarksTab();
+  initCommentsTab();
   updateGlobalProgress();
   
   // Re-run lucide icons to replace elements
@@ -102,6 +118,7 @@ function loadFromLocalStorage() {
     const savedStudyCount = localStorage.getItem('master_study_count');
     if (savedStudyCount) state.studyCount = JSON.parse(savedStudyCount);
     else state.studyCount = {};
+
   } catch (e) {
     console.error("Local storage loading error", e);
     state.studyCount = {};
@@ -876,3 +893,175 @@ function renderWordList() {
   lucide.createIcons();
 }
 
+// COMMENTS TAB
+function initCommentsTab() {
+  const form = document.getElementById('comment-form');
+  const authorInput = document.getElementById('comment-author');
+  const contentInput = document.getElementById('comment-content');
+  const charCount = document.getElementById('comment-char-count');
+
+  if (!form || !authorInput || !contentInput) return;
+
+  contentInput.addEventListener('input', () => {
+    charCount.textContent = `${contentInput.value.length} / 300`;
+  });
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const author = authorInput.value.trim();
+    const content = contentInput.value.trim();
+    if (!author || !content) return;
+
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i data-lucide="loader-circle"></i> 등록 중...';
+    lucide.createIcons();
+
+    try {
+      const response = await fetch(COMMENTS_ENDPOINT, {
+        method: 'POST',
+        headers: supabaseHeaders({ Prefer: 'return=representation' }),
+        body: JSON.stringify({ author, content })
+      });
+
+      if (!response.ok) throw new Error(await getSupabaseError(response));
+
+      contentInput.value = '';
+      charCount.textContent = '0 / 300';
+      await loadComments();
+      contentInput.focus();
+    } catch (error) {
+      console.error('Comment creation error', error);
+      showCommentsMessage(`등록하지 못했습니다. ${error.message}`, true);
+    } finally {
+      submitButton.disabled = false;
+      submitButton.innerHTML = '<i data-lucide="send"></i> 등록하기';
+      lucide.createIcons();
+    }
+  });
+
+  loadComments();
+}
+
+async function loadComments() {
+  showCommentsMessage('한마디를 불러오는 중이에요.');
+
+  try {
+    const response = await fetch(`${COMMENTS_ENDPOINT}?select=id,author,content,created_at&order=created_at.desc`, {
+      headers: supabaseHeaders()
+    });
+
+    if (!response.ok) throw new Error(await getSupabaseError(response));
+
+    state.comments = await response.json();
+    renderComments();
+  } catch (error) {
+    console.error('Comment loading error', error);
+    showCommentsMessage(`한마디를 불러오지 못했습니다. ${error.message}`, true);
+  }
+}
+
+async function getSupabaseError(response) {
+  try {
+    const result = await response.json();
+    return result.message || result.hint || `오류 코드 ${response.status}`;
+  } catch {
+    return `오류 코드 ${response.status}`;
+  }
+}
+
+function showCommentsMessage(message, isError = false) {
+  const list = document.getElementById('comments-list');
+  if (!list) return;
+
+  list.innerHTML = '';
+  const status = document.createElement('div');
+  status.className = `comments-empty${isError ? ' comments-error' : ''}`;
+  status.innerHTML = `<i data-lucide="${isError ? 'circle-alert' : 'loader-circle'}"></i>`;
+  const text = document.createElement('strong');
+  text.textContent = message;
+  status.appendChild(text);
+  list.appendChild(status);
+  lucide.createIcons();
+}
+
+function renderComments() {
+  const list = document.getElementById('comments-list');
+  const count = document.getElementById('comment-count');
+  if (!list || !count) return;
+
+  count.textContent = `${state.comments.length}개`;
+  list.innerHTML = '';
+
+  if (state.comments.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'comments-empty';
+    empty.innerHTML = '<i data-lucide="message-circle"></i><strong>아직 남겨진 한마디가 없어요.</strong><span>첫 번째 이야기를 들려주세요!</span>';
+    list.appendChild(empty);
+    lucide.createIcons();
+    return;
+  }
+
+  state.comments.forEach((comment) => {
+    const item = document.createElement('article');
+    item.className = 'comment-item';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'comment-avatar';
+    avatar.textContent = comment.author.charAt(0).toUpperCase();
+
+    const body = document.createElement('div');
+    body.className = 'comment-body';
+
+    const meta = document.createElement('div');
+    meta.className = 'comment-meta';
+
+    const author = document.createElement('strong');
+    author.textContent = comment.author;
+
+    const time = document.createElement('time');
+    const createdAt = new Date(comment.created_at);
+    time.dateTime = comment.created_at;
+    time.textContent = Number.isNaN(createdAt.getTime())
+      ? ''
+      : createdAt.toLocaleString('ko-KR', { dateStyle: 'medium', timeStyle: 'short' });
+
+    const content = document.createElement('p');
+    content.className = 'comment-text';
+    content.textContent = comment.content;
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'comment-delete';
+    remove.title = '한마디 삭제';
+    remove.setAttribute('aria-label', `${comment.author}님의 한마디 삭제`);
+    remove.innerHTML = '<i data-lucide="trash-2"></i>';
+    remove.addEventListener('click', async () => {
+      if (!confirm('이 한마디를 삭제할까요?')) return;
+
+      remove.disabled = true;
+      try {
+        const response = await fetch(`${COMMENTS_ENDPOINT}?id=eq.${encodeURIComponent(comment.id)}`, {
+          method: 'DELETE',
+          headers: supabaseHeaders()
+        });
+
+        if (!response.ok) throw new Error(await getSupabaseError(response));
+        state.comments = state.comments.filter((savedComment) => savedComment.id !== comment.id);
+        renderComments();
+      } catch (error) {
+        console.error('Comment deletion error', error);
+        alert(`삭제하지 못했습니다. ${error.message}`);
+        remove.disabled = false;
+      }
+    });
+
+    meta.append(author, time);
+    body.append(meta, content);
+    item.append(avatar, body, remove);
+    list.appendChild(item);
+  });
+
+  lucide.createIcons();
+}
